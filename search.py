@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -70,7 +71,27 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
+
+def get_directions(successors):
+    return [successor[1] for successor in successors]
+
+
+def get_current_pos(current_path):
+    current_state = current_path[-1]
+    current_pos = current_state[0]
+    return current_pos
+
+
+def get_solution(current_path):
+    return map(lambda x: x[1], current_path)
+
+
+def add_successors(fringe, current_path, successors):
+    for successor in successors:
+        fringe.push(current_path + [successor])
+
 
 def depthFirstSearch(problem):
     """
@@ -87,7 +108,27 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    fringe = util.Stack()
+    explored = set()
+    if problem.isGoalState(problem.getStartState()):
+        return []
+
+    successors = problem.getSuccessors(problem.getStartState())
+    add_successors(fringe, [], successors)
+
+    while not fringe.isEmpty():
+        current_path = fringe.pop()
+        current_pos = get_current_pos(current_path)
+        if current_pos not in explored:
+            explored.add(current_pos)
+            if problem.isGoalState(current_pos):
+                return get_solution(current_path)
+            successors = problem.getSuccessors(current_pos)
+            add_successors(fringe, current_path, successors)
+
+    return []
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
@@ -99,12 +140,14 @@ def uniformCostSearch(problem):
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
 
+
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
+
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
