@@ -93,6 +93,24 @@ def add_successors(fringe, current_path, successors):
         fringe.push(current_path + [successor])
 
 
+def generic_search(fringe, problem):
+    explored = set()
+    if problem.isGoalState(problem.getStartState()):
+        return []
+    successors = problem.getSuccessors(problem.getStartState())
+    add_successors(fringe, [], successors)
+    while not fringe.isEmpty():
+        current_path = fringe.pop()
+        current_pos = get_current_pos(current_path)
+        if current_pos not in explored:
+            explored.add(current_pos)
+            if problem.isGoalState(current_pos):
+                return get_solution(current_path)
+            successors = problem.getSuccessors(current_pos)
+            add_successors(fringe, current_path, successors)
+    return []
+
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -107,33 +125,12 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    "*** YOUR CODE HERE ***"
-
-    fringe = util.Stack()
-    explored = set()
-    if problem.isGoalState(problem.getStartState()):
-        return []
-
-    successors = problem.getSuccessors(problem.getStartState())
-    add_successors(fringe, [], successors)
-
-    while not fringe.isEmpty():
-        current_path = fringe.pop()
-        current_pos = get_current_pos(current_path)
-        if current_pos not in explored:
-            explored.add(current_pos)
-            if problem.isGoalState(current_pos):
-                return get_solution(current_path)
-            successors = problem.getSuccessors(current_pos)
-            add_successors(fringe, current_path, successors)
-
-    return []
+    return generic_search(util.Stack(), problem)
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return generic_search(util.Queue(), problem)
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
