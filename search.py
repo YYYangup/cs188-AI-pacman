@@ -95,8 +95,7 @@ def get_current_pos(current_path):
 
 def add_successors(fringe, current_path, successors, problem):
     """
-
-    :param fringe: holder of the paths yet to be processed 
+    :param fringe: holder of the paths yet to be processed
     :param current_path: list of states which make up the path 
     :param successors: future states
     :param problem: not used
@@ -105,31 +104,34 @@ def add_successors(fringe, current_path, successors, problem):
         fringe.push(current_path + [successor])
 
 
-def add_successors_with_priority(fringe, current_path, successors, problem):
+def add_successors_with_priority(fringe, current_path, successors, problem, heuristic):
     """
     :param fringe: holder of the paths yet to be processed
     :param current_path: list of states which make up the path 
     :param successors: future states
     :param problem: injected problem
+    :param heuristic: function that takes state and problem and returns heuristic cost of choosing that state
     """
     for successor in successors:
         successor_path = current_path + [successor]
-        cost_of_action = problem.getCostOfActions(get_directions(successor_path))
+        heuristic_cost = heuristic(get_current_pos(successor_path), problem)
+        cost_of_action = problem.getCostOfActions(get_directions(successor_path)) + heuristic_cost
         fringe.push(successor_path, cost_of_action)
 
 
-def generic_search(fringe, problem, add_successors_fn):
+def generic_search(fringe, problem, add_successors_fn, heuristic):
     """
     :param fringe: holder of the paths yet to be processed
     :param problem: injected problem
     :param add_successors_fn: defines how the successors are added to the fringe based on the problem
+    :param heuristic: function that takes state and problem and returns heuristic cost of choosing that state
     :return: list of directions to be followed to attain the goal defined by problem.isGoalState
     """
     explored = set()
     if problem.isGoalState(problem.getStartState()):
         return []
     successors = problem.getSuccessors(problem.getStartState())
-    add_successors_fn(fringe, [], successors, problem)
+    add_successors_fn(fringe, [], successors, problem, heuristic)
     while not fringe.isEmpty():
         current_path = fringe.pop()
         current_pos = get_current_pos(current_path)
@@ -138,7 +140,7 @@ def generic_search(fringe, problem, add_successors_fn):
             if problem.isGoalState(current_pos):
                 return get_directions(current_path)
             successors = problem.getSuccessors(current_pos)
-            add_successors_fn(fringe, current_path, successors, problem)
+            add_successors_fn(fringe, current_path, successors, problem, heuristic)
     return []
 
 
@@ -156,17 +158,17 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    return generic_search(util.Stack(), problem, add_successors)
+    return generic_search(util.Stack(), problem, add_successors, nullHeuristic)
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    return generic_search(util.Queue(), problem, add_successors)
+    return generic_search(util.Queue(), problem, add_successors, nullHeuristic)
 
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    return generic_search(util.PriorityQueue(), problem, add_successors_with_priority)
+    return generic_search(util.PriorityQueue(), problem, add_successors_with_priority, nullHeuristic)
 
 
 def nullHeuristic(state, problem=None):
@@ -179,8 +181,7 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return generic_search(util.PriorityQueue(), problem, add_successors_with_priority, heuristic)
 
 
 # Abbreviations
