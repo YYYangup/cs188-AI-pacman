@@ -69,45 +69,76 @@ def tinyMazeSearch(problem):
     sequence of moves will be incorrect, so only use this for tinyMaze.
     """
     from game import Directions
+
     s = Directions.SOUTH
     w = Directions.WEST
     return [s, s, w, s, w, w, s, w]
 
 
-def get_directions(successors):
-    return [successor[1] for successor in successors]
+def get_directions(path):
+    """
+    :param path: 
+    :return: the directions to be taken to follow the path
+    """
+    return map(lambda x: x[1], path)
 
 
 def get_current_pos(current_path):
+    """
+    :param current_path: 
+    :return: the (x,y) coordinate of the last position in the path  
+    """
     current_state = current_path[-1]
     current_pos = current_state[0]
     return current_pos
 
 
-def get_solution(current_path):
-    return map(lambda x: x[1], current_path)
+def add_successors(fringe, current_path, successors, problem):
+    """
 
-
-def add_successors(fringe, current_path, successors):
+    :param fringe: holder of the paths yet to be processed 
+    :param current_path: list of states which make up the path 
+    :param successors: future states
+    :param problem: not used
+    """
     for successor in successors:
         fringe.push(current_path + [successor])
 
 
-def generic_search(fringe, problem):
+def add_successors_with_priority(fringe, current_path, successors, problem):
+    """
+    :param fringe: holder of the paths yet to be processed
+    :param current_path: list of states which make up the path 
+    :param successors: future states
+    :param problem: injected problem
+    """
+    for successor in successors:
+        successor_path = current_path + [successor]
+        cost_of_action = problem.getCostOfActions(get_directions(successor_path))
+        fringe.push(successor_path, cost_of_action)
+
+
+def generic_search(fringe, problem, add_successors_fn):
+    """
+    :param fringe: holder of the paths yet to be processed
+    :param problem: injected problem
+    :param add_successors_fn: defines how the successors are added to the fringe based on the problem
+    :return: list of directions to be followed to attain the goal defined by problem.isGoalState
+    """
     explored = set()
     if problem.isGoalState(problem.getStartState()):
         return []
     successors = problem.getSuccessors(problem.getStartState())
-    add_successors(fringe, [], successors)
+    add_successors_fn(fringe, [], successors, problem)
     while not fringe.isEmpty():
         current_path = fringe.pop()
         current_pos = get_current_pos(current_path)
         if current_pos not in explored:
             explored.add(current_pos)
             if problem.isGoalState(current_pos):
-                return get_solution(current_path)
+                return get_directions(current_path)
             successors = problem.getSuccessors(current_pos)
-            add_successors(fringe, current_path, successors)
+            add_successors_fn(fringe, current_path, successors, problem)
     return []
 
 
@@ -125,17 +156,17 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    return generic_search(util.Stack(), problem)
+    return generic_search(util.Stack(), problem, add_successors)
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    return generic_search(util.Queue(), problem)
+    return generic_search(util.Queue(), problem, add_successors)
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return generic_search(util.PriorityQueue(), problem, add_successors_with_priority)
 
 
 def nullHeuristic(state, problem=None):
