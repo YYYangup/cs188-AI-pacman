@@ -93,7 +93,7 @@ def get_current_pos(current_path):
     return current_pos
 
 
-def add_successors(fringe, current_path, successors, problem):
+def add_successors(fringe, current_path, successors, problem, heuristic):
     """
     :param fringe: holder of the paths yet to be processed
     :param current_path: list of states which make up the path 
