@@ -405,7 +405,7 @@ def cornersHeuristic(state, problem):
     walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0  # Default to trivial solution
+    return min(map(lambda x: util.manhattanDistance(state[0], x), corners))
 
 
 class AStarCornersAgent(SearchAgent):
