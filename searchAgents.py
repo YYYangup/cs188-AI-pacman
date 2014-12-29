@@ -181,7 +181,7 @@ class PositionSearchProblem(search.SearchProblem):
 
             if '_display' in dir(__main__):
                 if 'drawExpandedCells' in dir(__main__._display):  # @UndefinedVariable
-                    __main__._display.drawExpandedCells(self._visitedlist)  #@UndefinedVariable
+                    __main__._display.drawExpandedCells(self._visitedlist)  # @UndefinedVariable
 
         return isGoal
 
@@ -308,6 +308,9 @@ class CornersProblem(search.SearchProblem):
         def is_all_visited(self):
             return all(map(lambda x: x[1], self.corners))
 
+        def unvisited_corners(self):
+            return map(lambda x: x[0], filter(lambda x: not x[1], self.corners))
+
         def __hash__(self):
             return hash(self.corners)
 
@@ -401,11 +404,12 @@ def cornersHeuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
-    corners = problem.corners  # These are the corner coordinates
-    walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
+    corners_states = state[1]
 
-    "*** YOUR CODE HERE ***"
-    return min(map(lambda x: util.manhattanDistance(state[0], x), corners))
+    unvisited_corners = corners_states.unvisited_corners()
+    if len(unvisited_corners) == 0:
+        return 0
+    return max(map(lambda x: util.manhattanDistance(state[0], x), unvisited_corners))
 
 
 class AStarCornersAgent(SearchAgent):
