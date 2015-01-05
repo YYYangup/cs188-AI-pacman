@@ -18,6 +18,7 @@ import random, util
 
 from game import Agent
 
+
 class ReflexAgent(Agent):
     """
       A reflex agent chooses an action at each choice point by examining
@@ -45,7 +46,7 @@ class ReflexAgent(Agent):
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
         bestScore = max(scores)
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
 
         "Add more of your code here if you want to"
 
@@ -101,6 +102,7 @@ def scoreEvaluationFunction(currentGameState):
     """
     return currentGameState.getScore()
 
+
 class MultiAgentSearchAgent(Agent):
     """
       This class provides some common elements to all of your
@@ -116,10 +118,11 @@ class MultiAgentSearchAgent(Agent):
       is another abstract class.
     """
 
-    def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
-        self.index = 0 # Pacman is always agent index 0
+    def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
+        self.index = 0  # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
+
 
 class MinimaxAgent(MultiAgentSearchAgent):
     """
@@ -143,8 +146,43 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        total_agents = gameState.getNumAgents()
+
+        def calculateMax(gamestate, current_depth):
+            actions_for_pacman = gamestate.getLegalActions(0)
+            
+            if current_depth > self.depth or gamestate.isWin() or not actions_for_pacman:
+                return self.evaluationFunction(gamestate), None
+
+
+            successor_cost = []
+            for action in actions_for_pacman:
+                successor = gamestate.generateSuccessor(0, action)
+                successor_cost.append((calculateMin(successor, 1, current_depth), action))
+
+            return max(successor_cost)
+
+        def calculateMin(gamestate, agent_index, current_depth):
+            actions_for_ghost = gamestate.getLegalActions(agent_index)
+            if not actions_for_ghost or gamestate.isLose():
+                return self.evaluationFunction(gamestate), None
+
+            successors = [gamestate.generateSuccessor(agent_index, action) for action in actions_for_ghost]
+
+            if agent_index == total_agents - 1:
+                successor_cost = []
+                for successor in successors:
+                    successor_cost.append(calculateMax(successor, current_depth + 1))
+            else:
+                successor_cost = []
+                for successor in successors:
+                    successor_cost.append(calculateMin(successor, agent_index + 1, current_depth))
+
+            return min(successor_cost)
+
+
+        return calculateMax(gameState, 1)[1]
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -157,6 +195,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -172,6 +211,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+
 
 def betterEvaluationFunction(currentGameState):
     """
