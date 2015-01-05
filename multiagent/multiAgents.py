@@ -150,10 +150,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         def calculateMax(gamestate, current_depth):
             actions_for_pacman = gamestate.getLegalActions(0)
-            
+
             if current_depth > self.depth or gamestate.isWin() or not actions_for_pacman:
                 return self.evaluationFunction(gamestate), None
-
 
             successor_cost = []
             for action in actions_for_pacman:
@@ -193,8 +192,56 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        total_agents = gameState.getNumAgents()
+
+        def calculateMax(gamestate, current_depth, alpha, beta):
+            actions_for_pacman = gamestate.getLegalActions(0)
+
+            if current_depth > self.depth or gamestate.isWin() or not actions_for_pacman:
+                return self.evaluationFunction(gamestate), Directions.STOP
+
+            v = float('-inf')
+            bestAction = Directions.STOP
+            for action in actions_for_pacman:
+                successor = gamestate.generateSuccessor(0, action)
+                cost = calculateMin(successor, 1, current_depth, alpha, beta)[0]
+                if cost > v:
+                    v = cost
+                    bestAction = action
+                if v > beta:
+                    return v, bestAction
+                alpha = max(alpha, v)
+
+            return v, bestAction
+
+        def calculateMin(gamestate, agent_index, current_depth, alpha, beta):
+            actions_for_ghost = gamestate.getLegalActions(agent_index)
+            if not actions_for_ghost or gamestate.isLose():
+                return self.evaluationFunction(gamestate), Directions.STOP
+
+            v = float('inf')
+            bestAction = Directions.STOP
+            isPacman = agent_index == total_agents - 1
+            for action in actions_for_ghost:
+                successor = gamestate.generateSuccessor(agent_index, action)
+                if isPacman:
+                    cost = calculateMax(successor, current_depth + 1, alpha, beta)[0]
+                else:
+                    cost = calculateMin(successor, agent_index + 1, current_depth, alpha, beta)[0]
+                
+                if cost < v:
+                    v = cost
+                    bestAction = action
+                if v < alpha:
+                    return v, bestAction
+                beta = min(beta, v)
+
+            return v, bestAction
+
+
+        defaultAlpha = float('-inf')
+        defaultBeta = float('inf')
+        return calculateMax(gameState, 1, defaultAlpha, defaultBeta)[1]
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
