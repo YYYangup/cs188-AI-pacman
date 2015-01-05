@@ -51,6 +51,17 @@ class ReflexAgent(Agent):
 
         return legalMoves[chosenIndex]
 
+    def calculateScoreBasedOnGhosts(self, ghostStates, pacmanPos):
+        score = 0
+        for ghost in ghostStates:
+            ghostScaredTime = ghost.scaredTimer
+            distanceToGhost = util.manhattanDistance(pacmanPos, ghost.getPosition())
+            if ghostScaredTime <= 0:
+                score -= pow(max(7 - distanceToGhost, 0), 2)
+            else:
+                score += pow(max(8 - distanceToGhost, 0), 2)
+        return score
+
     def evaluationFunction(self, currentGameState, action):
         """
         Design a better evaluation function here.
@@ -74,7 +85,11 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        distanceToFood = map(lambda x: 1.0 / manhattanDistance(x, newPos), newFood.asList())
+        scoreBasedOnFood = max(distanceToFood + [0])
+        scoreBasedOnGhosts = self.calculateScoreBasedOnGhosts(newGhostStates, newPos)
+        return scoreBasedOnFood + scoreBasedOnGhosts + successorGameState.getScore()
+
 
 def scoreEvaluationFunction(currentGameState):
     """
