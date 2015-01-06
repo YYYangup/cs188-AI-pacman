@@ -228,7 +228,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     cost = calculateMax(successor, current_depth + 1, alpha, beta)[0]
                 else:
                     cost = calculateMin(successor, agent_index + 1, current_depth, alpha, beta)[0]
-                
+
                 if cost < v:
                     v = cost
                     bestAction = action
@@ -256,8 +256,40 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        total_agents = gameState.getNumAgents()
+
+        def calculateMax(gamestate, current_depth):
+            actions_for_pacman = gamestate.getLegalActions(0)
+
+            if current_depth > self.depth or gamestate.isWin() or not actions_for_pacman:
+                return self.evaluationFunction(gamestate), None
+
+            successors_score = []
+            for action in actions_for_pacman:
+                successor = gamestate.generateSuccessor(0, action)
+                successors_score.append((calculateMin(successor, 1, current_depth)[0], action))
+
+            return max(successors_score)
+
+        def calculateMin(gamestate, agent_index, current_depth):
+            actions_for_ghost = gamestate.getLegalActions(agent_index)
+            if not actions_for_ghost or gamestate.isLose():
+                return self.evaluationFunction(gamestate), None
+
+            successors = [gamestate.generateSuccessor(agent_index, action) for action in actions_for_ghost]
+
+            successors_score = []
+            isPacman = agent_index == total_agents - 1
+            for successor in successors:
+                if isPacman:
+                    successors_score.append(calculateMax(successor, current_depth + 1))
+                else:
+                    successors_score.append(calculateMin(successor, agent_index + 1, current_depth))
+
+            averageScore = sum(map(lambda x: float(x[0]) / len(successors_score), successors_score))
+            return averageScore, None
+
+        return calculateMax(gameState, 1)[1]
 
 
 def betterEvaluationFunction(currentGameState):
